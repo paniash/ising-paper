@@ -15,7 +15,7 @@ We assume a lattice at high temperature since temperature doesnt affect the J ma
 
 \begin{figure}
     \centering
-    \includegraphics{J model.png}
+    \includegraphics{J-model.png}
     \label{J matrix for nearest neighbour interaction}
 \end{figure}
 
@@ -30,7 +30,7 @@ We implement the Least Square Regression model available in Scikit-learn. The de
     \item Score prediction method: Pearson's \(R^2\)
 \end{itemize}
 
-The results of linear regression turn out to be a perfect score for both training and testing data 
+The results of linear regression turn out to be a perfect score for both training and testing data
 
 [code implementation of lsq]
 
@@ -85,7 +85,7 @@ Thus, ridge always scales the J by the regularisation parameter. Larger the \(\l
 
 Lasso, on the other hand doesn't care about asymptotically reducing J. As we increase \(\lambda\), the gap b/w the \(J_{lsq}\) and \(J_{lasso}\) where J=0 widens. This results in more and more unimportant parts of our data being set to 0 (which we don't see in ridge). Thus, for some specific \(\lambda\), we have exactly the unnecessary data set to 0, and the prominent parts of our "slope" J intact. This is the reason we see sweet spots that perfectly regularise by making the unnecessary overfitting to 0 and only retain the original model. This is phenomenon is also referred to as 'sparse' regression.
 
-The Ridge model works at finding atom interaction beyond neighbours. We tested this by generating a data of lattices and labelling them with energy now defined by: 
+The Ridge model works at finding atom interaction beyond neighbours. We tested this by generating a data of lattices and labelling them with energy now defined by:
 \[J_{ij}=-1 if i=j-1 || i=j+1\]
 \[J_{ij}=-0.5 if i=j-2 || i=j+2\]
 \[J_{ij}=0\] else
@@ -101,7 +101,7 @@ With our goal as to predict the ordered/disordered state of our lattice, we are 
 The goal of this algorithm is to find an equilibrium state for the two-dimensional spin lattice system at a particular temperature dictated by \(\beta\). It is achieved as follows:
 \begin{enumerate}
     \item Begin with a random state \(\mu\) for the lattice configuration.
-    \item Pick any random lattice site and flip the sign of the spin. We call this new state \(\nu\). What is the probability P($\mu \rightarrow \nu$) that we'll accept this new state? 
+    \item Pick any random lattice site and flip the sign of the spin. We call this new state \(\nu\). What is the probability P($\mu \rightarrow \nu$) that we'll accept this new state?
     \item If \(E_{\mu}>E_{\nu}\), then we set $P_{\nu \rightarrow \mu} = 1$ and thus by using the detailed balance equation we get $P_{\nu \rightarrow \mu} =e^{-\beta(E_{\nu}-E_{\mu})}$
     \item If $E_{\nu}>E_{\mu}$, then we set $P_{\mu \rightarrow \nu} = 1$ (i.e) with full probability, the spins gets flipped to a more stable configuration.
     \item Iterate step (1)-(4) as many times as required. Eventually we end up with an equilibrium state for large enough iterations
@@ -117,7 +117,7 @@ Input parameters while defining a class object of 2D ising model:
     \item d: Dimension of our 2D lattice. dtype=int
     \item a: Expected ratio of down spins to up spins in our randomly generated lattice
     \item mfield: Option to add the presence of an external magnetic field in our existing lattice.
-    
+
 \end{enumerate}
 
 Objects in our 2D ising model class:
@@ -126,7 +126,7 @@ Objects in our 2D ising model class:
     \item lattice: Our randomly generated lattice (with 0 padded on the edge) on defining the 2D ising model object.
     \item energy: Computed energy of self.lattice
     \item spin: Computed net spin of self.lattice
-    
+
 \end{enumerate}
 
 Functions in our 2D ising model class:
@@ -136,14 +136,14 @@ Functions in our 2D ising model class:
     \item get energy: Function to compute the energy of self.lattice
     \item flip check: Inputs x,y co-ordinates, outputs the energy before and after flipping the spin at (x,y)
     \item flip: Inputs x,y co-ordinates, flips the spin at (x,y) of self.lattice
-    
+
 \end{enumerate}
 
 We performed a numba implementation of our metropolis algorithm as it is extremely slow to perform iterations of order ~ 100,000 in a standard python executer. \\
 Runtime of generating one 50x50 lattice after 100,000 metro iterations using a python executer: ~ 47 secs\\
 Runtime of generating one 50x50 lattice after 100,000 metro iterations using numba: ~ 0.18 secs
 
-The data is organised as 10,000 Metro-generated lattices for one single temperature T. We have 20 such equally spaced temperatures in the range of T: 0.25-4 units. 
+The data is organised as 10,000 Metro-generated lattices for one single temperature T. We have 20 such equally spaced temperatures in the range of T: 0.25-4 units.
 
 Iteration plots of our Metropolis algorithm shows that our algorithm exhibits convergence for lower temperatures and fluctuates and becomes noisy with increase in temperature. This is solely due to the fact that our system has an energy range for its likelihood to exist. These energy states almost have equal likelihood due to high T, and this does not correspond to the fact that our algorithm misbehaves at those cases. Spins usually do not converge since there are theoretically many spin configurations that might correspond to the same energy state.
 
@@ -174,7 +174,7 @@ The Random forest implemented:
         \item min sample split: No.of samples needed to split an internal node
     \item Random sampling method: Bootstrap sampling
     \item Additional optimisation: Warm start=True. This ensures that you add estimators without fitting a whole new forest every time.
-    \item Score prediction method for ordered and disordered samples: OOB estimators 
+    \item Score prediction method for ordered and disordered samples: OOB estimators
     \item Score prediction method for critical samples: mean accuracy score (in-built score function in our training model)
 \end{itemize}
 
@@ -194,4 +194,4 @@ Results of our Modified Random Forest:
 [scores graf]
 
 The results show an increase in the accuracy of the classification of critical samples compared to vanilla RF. Interestingly, by emphasising on samples closer to critical temperature Tc , the our altered version of RF works better
-for coarse trees (92.0\%) than fine ones (88.75\%). A reason for this might be due to the fact that our implementation of RF identified many features in the critical samples that made it effect in larger leaf sizes than smaller ones. We note that our model still retains its efficiency in classifying the ordered and disordered samples as the OOB scores for these samples are still good. 
+for coarse trees (92.0\%) than fine ones (88.75\%). A reason for this might be due to the fact that our implementation of RF identified many features in the critical samples that made it effect in larger leaf sizes than smaller ones. We note that our model still retains its efficiency in classifying the ordered and disordered samples as the OOB scores for these samples are still good.
