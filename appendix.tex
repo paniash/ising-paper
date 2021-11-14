@@ -47,8 +47,6 @@ for n in [250, 800, 1700, 2000, 4000, 5000]:
 
     # setting up our ML algos
     leastsq = linear_model.LinearRegression()
-    ridge = linear_model.Ridge()
-    lasso = linear_model.Lasso()
 
     # needed for training the data: computing the outer product of S_i
     train_states = np.einsum("...i,...j->...ij", train, train)
@@ -80,6 +78,247 @@ for n in [250, 800, 1700, 2000, 4000, 5000]:
         J, vmin=-1, vmax=1, cmap="Spectral_r", interpolation="nearest", origin="lower"
     )
     plt.colorbar(c)
+\end{minted}
+
+\subsection{1D training using Lasso regression}
+
+Here, we adopt the same \texttt{energy()} function as used in least square regression but with training done via Lasso regression.
+
+\begin{minted}{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+
+# function to return the energy of our lattice
+def energy(l):
+    e = 0
+    j = 1
+    # our energy assumes periodic boundary conditions
+    for i in range(l.size - 1):
+
+        e += -j * l[i] * (l[i - 1] + l[i + 1])
+
+    e += -j * l[l.size - 1] * (l[l.size - 2] + l[0])
+
+    return e
+
+# length of our lattice
+d = 50
+# no of 1d ising models
+narr = np.linspace(100, 5000, 100, dtype="int")
+
+# obtain score relation with varying number of datapoints
+for n in narr:
+    score_tr = []
+    score_te = []
+
+    # defining our lattice
+    l = np.random.choice([-1, 1], size=(n, d))
+
+    # array to store the labels
+    label = np.zeros(n)
+
+    # creating the labels
+    for i in range(n):
+        label[i] = energy(l[i])
+
+    # partition of our training n testing sets
+    m = int(7 * n / 10)
+
+    train = l[:m]
+    test = l[m:]
+
+    train_label = label[:m]
+    test_label = label[m:]
+
+    # data generated!!
+
+    # setting up our ML algos
+    lasso = linear_model.Lasso(tol=0.01)
+
+    # needed for training the data: computing the outer product of S_i
+    train_states = np.einsum("...i,...j->...ij", train, train)
+    shape = train_states.shape
+
+    # each row is a reshaped from a 5x5 matrix of S_i*S_j
+    train_states = train_states.reshape((shape[0], shape[1] * shape[2]))
+
+    # needed for training the data: computing the outer product of S_i
+    test_states = np.einsum("...i,...j->...ij", test, test)
+    shape = test_states.shape
+
+    # each row is a reshaped from a 5x5 matrix of S_i*S_j
+    test_states = test_states.reshape((shape[0], shape[1] * shape[2]))
+
+    l = np.logspace(-5, 6, 100)
+    l = np.round(l, 5)
+    i = 0
+
+    # obtain score relatn with varying regularisation parameter lambda
+    for a in l:
+        i += 1
+
+        # training our dataset
+        lasso.set_params(alpha=a)
+        lasso.fit(train_states, train_label)
+        J = lasso.coef_.reshape((shape[1], shape[2]))
+
+        mark1 = lasso.score(train_states, train_label) * 100
+        mark2 = lasso.score(test_states, test_label) * 100
+
+        score_tr.append(mark1)
+        score_te.append(mark2)
+
+    plt.figure()
+    plt.grid()
+    plt.title(r"Variation of train and test score. n: %s" % n)
+    plt.xlabel(r"log($\lambda$)")
+    plt.ylabel(r"$R^{2}$ (in %)")
+    plt.plot(np.log(l), score_tr, label="Training Score")
+    plt.plot(np.log(l), score_te, label="Testing Score")
+    plt.legend()
+    plt.savefig(r"%s.png" % n)
+\end{minted}
+
+\subsection{1D training using Ridge regression}
+
+\begin{minted}{python}
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+
+# function to return the energy of our lattice
+def energy(l):
+    e = 0
+    j = 1
+    # our energy assumes periodic boundary conditions
+    for i in range(l.size - 1):
+
+        e += -j * l[i] * (l[i - 1] + l[i + 1])
+
+    e += -j * l[l.size - 1] * (l[l.size - 2] + l[0])
+
+    return e
+
+
+# length of our lattice
+d = 50
+# no of 1d ising models
+n = 10000
+score_tr = []
+score_te = []
+
+# defining our lattice
+l = np.random.choice([-1, 1], size=(n, d))
+
+# array to store the labels
+label = np.zeros(n)
+
+# creating the labels
+for i in range(n):
+    label[i] = energy(l[i])
+
+# partition of our training n testing sets
+m = int(7 * n / 10)
+
+train = l[:m]
+test = l[m:]
+
+train_label = label[:m]
+test_label = label[m:]
+
+# data generated!!
+
+# setting up our ML algos
+leastsq = linear_model.LinearRegression()
+ridge = linear_model.Ridge(tol=0.01)
+lasso = linear_model.Lasso()
+
+# needed for training the data: computing the outer product of S_i
+train_states = np.einsum("...i,...j->...ij", train, train)
+shape = train_states.shape
+
+# each row is a reshaped from a 5x5 matrix of S_i*S_j
+train_states = train_states.reshape((shape[0], shape[1] * shape[2]))
+
+# needed for training the data: computing the outer product of S_i
+test_states = np.einsum("...i,...j->...ij", test, test)
+shape = test_states.shape
+
+# each row is a reshaped from a 5x5 matrix of S_i*S_j
+test_states = test_states.reshape((shape[0], shape[1] * shape[2]))
+
+l = np.logspace(-5, 6, 100)
+l = np.round(l, 5)
+i = 0
+for a in l:
+    i += 1
+
+    # training our dataset
+    ridge.set_params(alpha=a)
+    ridge.fit(train_states, train_label)
+    J = ridge.coef_.reshape((shape[1], shape[2]))
+
+    mark1 = ridge.score(train_states, train_label) * 100
+    mark2 = ridge.score(test_states, test_label) * 100
+
+    score_tr.append(mark1)
+    score_te.append(mark2)
+
+    plt.figure()
+    plt.title(r"$\lambda$=%s" % a)
+    c = plt.imshow(
+        J, vmin=-1, vmax=1, cmap="Spectral_r", interpolation="nearest", origin="lower"
+    )
+    plt.colorbar(c)
+    plt.savefig(r"%s.png" % i)
+
+plt.figure()
+plt.grid()
+plt.title(r"Variation of train and test score. n: %s" % n)
+plt.xlabel(r"$\lambda$")
+plt.ylabel(r"$R^{2}$ (in %)")
+plt.plot(np.log(l), score_tr, label="Training Score")
+plt.plot(np.log(l), score_te, label="Testing Score")
+plt.legend()
+plt.show()
+\end{minted}
+
+\subsection{Implementation of 2nd nearest neighbour interaction for 1D Ising model}
+
+This is only a snippet of code for implementing one-dimensional model where 2$^{nd}$ nearest neighbour interaction.
+
+\begin{minted}{python}
+
+# defining energy function for next to next atom interactions
+
+# function to take care of periodic index of our lattice
+def pbc(i, d):
+    if i < d:
+        return i
+
+    else:
+        return d - i
+
+
+# function to return the energy of our lattice
+def energy(l, d):
+    e = 0
+    # center is the atom, left n right r interactions with neighbours
+    j = [-0.5, -1, 0, -1, -0.5]
+
+    # our energy assumes periodic boundary conditions
+    for i in range(l.size):
+
+        e += l[i] * (
+            j[pbc(0, d)] * l[pbc(i - 2, d)]
+            + j[pbc(1, d)] * l[pbc(i - 1, d)]
+            + j[pbc(2, d)] * l[pbc(i, d)]
+            + j[pbc(3, d)] * l[pbc(i + 1, d)]
+            + j[pbc(4, d)] * l[pbc(i + 2, d)]
+        )
+
+    return e
 \end{minted}
 
 \subsection{Generation of 2D Ising data using Metropolis}
@@ -355,35 +594,47 @@ data_ordered = data[:8]
 data_critical = data[8:14]
 data_disordered = data[14:]
 
-
 # our training data
 X_ordered = []
 for i in range(len(data_ordered[:])):
-    for j in range(data_ordered[0].size):
-        X_ordered.append(data_ordered[i][j].lattice)
+    # lattice very close to critical temperature
+    if i == len(data_ordered[:]) - 1:
+        for j in range(data_ordered[0].size):
+            X_ordered.append(data_ordered[i][j].lattice)
+            X_ordered.append(data_ordered[i][j].lattice)
+            X_ordered.append(data_ordered[i][j].lattice)
+    # lattice bit near to critical temperature
+    elif i == len(data_ordered[:]) - 2:
+        for j in range(data_ordered[0].size):
+            X_ordered.append(data_ordered[i][j].lattice)
+            X_ordered.append(data_ordered[i][j].lattice)
+    # lattice bit far from critical temperature
+    else:
+        for j in range(data_ordered[0].size):
+            X_ordered.append(data_ordered[i][j].lattice)
 
 X_disordered = []
 for i in range(len(data_disordered[:])):
-    for j in range(data_disordered[0].size):
-        X_disordered.append(data_disordered[i][j].lattice)
+    # lattice very close to critical temperature
+    if i == len(data_disordered[:]) - 1:
+        for j in range(data_disordered[0].size):
+            X_disordered.append(data_disordered[i][j].lattice)
+            X_disordered.append(data_disordered[i][j].lattice)
+            X_disordered.append(data_disordered[i][j].lattice)
+    # lattice bit near to critical temperature
+    elif i == len(data_disordered[:]) - 2:
+        for j in range(data_disordered[0].size):
+            X_disordered.append(data_disordered[i][j].lattice)
+            X_disordered.append(data_disordered[i][j].lattice)
+    # lattice bit far from critical temperature
+    else:
+        for j in range(data_disordered[0].size):
+            X_disordered.append(data_disordered[i][j].lattice)
 
 X_critical = []
 for i in range(len(data_critical[:])):
-    # lattice bit far from critical temperature
-    if i == 0 or i == 5:
-        for j in range(data_critical[0].size):
-            X_critical.append(data_critical[i][j].lattice)
-    # lattice bit near to critical temperature
-    if i == 1 or i == 4:
-        for j in range(data_critical[0].size):
-            X_critical.append(data_critical[i][j].lattice)
-            X_critical.append(data_critical[i][j].lattice)
-    # lattice very close to critical temperature
-    if i == 2 or i == 3:
-        for j in range(data_critical[0].size):
-            X_critical.append(data_critical[i][j].lattice)
-            X_critical.append(data_critical[i][j].lattice)
-            X_critical.append(data_critical[i][j].lattice)
+    for j in range(data_critical[0].size):
+        X_critical.append(data_critical[i][j].lattice)
 
 del data, data_ordered, data_disordered, data_critical
 

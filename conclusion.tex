@@ -1,1 +1,26 @@
 \section{Conclusion}
+\label{sec:conclusion}
+
+Our modified Random Forests algorithm shows promising efficacy in classifying lattice phases in the critical region (in addition to other regions) with an efficiency best at a leaf size of 10000 with large estimators (our results present upto 160).
+However, this comes at a cost of the algorithm being computationally expensive with a runtime of \( \approx \) 90-170 seconds.
+
+This accuracy is comparable to the convolutional neural networks (CNN) implementation with an accuracy of 88-92\% \cite{2019}.
+
+\section{Limitations and future prospects}
+
+\subsection{One-dimensional Ising model}
+
+We see that linear regression is bad for training our model for the 1D lattice.
+If the dataset is small, Lasso predicts that our model accurately with a regularization \( \lambda \approx 10^{-2} - 10^{-4}\).
+However, if the dataset is large, then both Lasso and Ridge regression predict an accurate model with regularization \( \lambda \approx 10^{-2} - 10^{-4}\).
+
+For our experimentation with 2$^{nd}$ nearest neighbour interaction model, we see that Ridge regression works pretty well in predicting interactions in our lattice.
+
+\subsection{Two-dimensional Ising model}
+
+Our approach depended on a supervised learning model with labels indicating whether the lattice phase is ordered, disordered or critical.
+This requires us to know beforehand the properties of the material under consideration in particular its critical point where the material transitions from a ferromagnetic to a paramagnetic phase, which means manually placing labels for ordered/disordered lattices to get a well-trained model.
+
+We hope to work on using an unsupervised approach to get a ``generative'' rather than a ``discriminative'' model in the future.
+These models are capable of generating a new critical phase lattice from the information of lattices we have in our data.
+This is achieved using restricted Boltzmann machines and deep Boltzmann machines \cite{morningstar2017deep, salakhutdinov2009deep}.

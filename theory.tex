@@ -1,7 +1,7 @@
 \section{Theory}
 \label{sec:theory} 
 
-For any Ising spin model consisting of spin particles such as atoms/molecules, we consider a lattice (depending on the dimension of the system under consideration) with \( N \) spin particles, whose Hamiltonian is given by
+For any Ising spin model consisting of spin particles such as atoms/molecules, we consider a lattice (depending on the dimension of the system under consideration) with \( N \) spin particles, whose Hamiltonian is given by\footnote{Please note that the system is devoid of any externally applied magnetic field, whose application will alter the overall Hamiltonian.}
 
 \begin{equation}
     \vec{H} = \sum_{\langle i, j \rangle}^{N, N} J_{ij} \vec{\sigma}_i \cdot \vec{\sigma}_j
@@ -19,3 +19,11 @@ The corresponding energy of the entire lattice consisting of \( N \) particles i
 \end{equation}
 
 where \( \sigma_{i/j} \) is +1 for spin \( \uparrow \) and -1 for spin \( \downarrow \).
+
+We consider homogenous lattices with spin particle pattern repeated spatially.
+This means that our coupling constant \( J_{ij} \) is independent of \( i, \: j \) i.e. \( J_{ij} = J \).
+Thus, our expression for lattice energy becomes
+
+\begin{equation}
+    E = J \sum_{\langle i, j \rangle}^{N, N} \sigma_i  \sigma_j
+\end{equation}
