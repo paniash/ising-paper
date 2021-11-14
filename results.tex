@@ -1,4 +1,4 @@
-\section{Results}
+\section{Implementation and Results}
 
 \subsection{1D Ising Model}
 
@@ -34,7 +34,7 @@ A random assignment of spins in an 50 atom array along with the calculation of e
     \right.
 \end{equation*}
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[scale=0.6]{J-model.png}
     \caption{J matrix for nearest neighbour interaction}
@@ -61,7 +61,7 @@ The results of linear regression turn out to be a perfect score for both trainin
 
 The issue of overfitting is clearly seen in \cref{fig:overfit} if we plot the predicted $J$ matrix.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[scale=0.4]{overfitting.png}
     \caption{Overfitted $J$ matrix}
@@ -69,9 +69,14 @@ The issue of overfitting is clearly seen in \cref{fig:overfit} if we plot the pr
 \end{figure}
 
 
-[fig. of three instances of fitting the data]
+[add lsq n200,1700,2500 in a single fig with (a), (b), (c) labelling "the extent of overfitting for varying data size"]
 
-[graph of score vs n]
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.4]{lsq_Lattice_score-vs-datapts.png}
+    \caption{Training and testing score for varying data size}
+    \label{fig:lsqscore}
+\end{figure}
 
 The model overfits and produces perfect scores in both training and testing datasets after a certain size of input data because the statistical properties of our training and testing data becomes identical on large samples of lattices.
 Thus overfitting gets away with it unattended!
@@ -150,7 +155,7 @@ Thus, Ridge always scales the $J$ by the regularisation parameter.
 Larger the \(\lambda\), more flat our ``slope'' becomes.
 But even for large \(\lambda\), $J$ only approaches towards 0 asymptotically (close but never equal to 0).
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[scale=0.5]{ridge-vs-lasso.png}
     \caption{Visual schematic comparing Ridge and Lasso regression effects.}
@@ -175,9 +180,24 @@ The Ridge model works at finding atom interaction beyond neighbours. We tested t
     \right.
 \end{equation*}
 
-[fig. of J model and predicted J]
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{J_2atoms_2.png}
+    \caption{J matrix defined for a next nearest interaction lattice}
+\end{figure}
 
-[code result of scores ]
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{J_2atoms_2_ridge.png}
+    \caption{J matrix predicted by Ridge}
+\end{figure}
+
+\begin{itemize}
+    \item n: 5000
+    \item train-test: 3500 - 1500
+    \item Training score: 99.99/100
+    \item Testing score: 99.99 /100 
+\end{itemize}
 
 \subsection{2D Ising Training Data}
 With our goal as to predict the ordered/disordered state of our lattice, we are in need of generating lots of Ising lattice data for each of the temperature steps about the critical temperature \(T_c\).
@@ -232,7 +252,23 @@ This is solely due to the fact that our system has an energy range for its likel
 These energy states almost have equal likelihood due to high $T$, and this does not correspond to the fact that our algorithm misbehaves at those cases.
 Spins usually do not converge since there are theoretically many spin configurations that might correspond to the same energy state.
 
-[convergence plots for ordered, critical and disordered energies]
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{beta1-monte.png}
+    \caption{Ordered lattice generation}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{beta-5-monte.png}
+    \caption{Critical lattice generation}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{beta-1-monte.png}
+    \caption{Disordered lattice generation}
+\end{figure}
 
 \subsection{2D Phase Transition Training}
 
@@ -297,11 +333,14 @@ The results obtained by Mehta \emph{et al.} \cite{2019} shows a poor performance
 \subsubsection{Improving the algorithm: Transductive Approach}
 Given that we see the fact our model struggles in the critical region, we expect a deeper learning in the critical region will help our model get over the poor performance.
 We implemented this idea into our random by introducing a transduction in our model by weighing the lattices closer to the critical regime more than the ones far from it.
-Since scikit-learn does not have the option to add sample weight as an input, we performed data cloning so that our random forest encounters these samples more and trains more on them.
-This simple hack will aid our algorithm to pick features more prominent in the critical region and by this emphasis, it trains deep in those features.
-It also lowers the priority of features present in completely ordered/disordered lattices since they don’t play as important of a role as the lattices that are in the neighbourhood of the critical point.
 
-[transduction graf]
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{region.png}
+    \caption{Schematic of our weighting of the lattices in our implementation}
+\end{figure}
+
+Since scikit-learn does not have the option to add sample weight as an input, we performed data cloning so that our random forest encounters these samples more and trains more on them. This simple hack will aid our algorithm to pick features more prominent in the critical region and by this emphasis, it trains deep in those features. It also lowers the priority of features present in completely ordered/disordered lattices since they don’t play as important of a role as the lattices that are in the neighbourhood of the critical point.
 
 Results of our modified Random Forests are as follows,
 
