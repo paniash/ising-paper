@@ -10,13 +10,21 @@ Now, if we are just given one lattice configuration with an energy label defined
 
 \subsubsection{Data generation}
 We assume a lattice at high temperature since temperature doesnt affect the J matrix. A random assignment of spins in an 50 atom array along with the calculation of energy label based on the interaction matrix J defined by:
-\[J_{ij}=-1 if i=j-1 || i=j+1\]
-\[J_{ij}=0\] else
+
+\begin{equation*}
+    J_{ij} = \left\{
+        \begin{array}{ll}
+            -1 & \mbox{if } i = j \pm 1\\
+            0 & \mbox{otherwise}
+        \end{array}
+    \right.
+\end{equation*}
 
 \begin{figure}
     \centering
     \includegraphics{J-model.png}
-    \label{J matrix for nearest neighbour interaction}
+    \caption{J matrix for nearest neighbour interaction}
+    \label{fig:j-matrix}
 \end{figure}
 
 \subsubsection{Unregularised Linear Regression}
@@ -26,7 +34,10 @@ We implement the Least Square Regression model available in Scikit-learn. The de
     \item Input variable: \(X_{ij}=\sigma_i\sigma_j\)
     \item Predicted Regression variable: \(E^n=X^n.J\), where n is the nth lattice we input
     \item No of training lattices: N=10,000
-    \item Loss function: \(\frac{1}{N} \sum_{n=1}^N(E_p^{(n)}-E_{label}^{(n)})^2\)
+    \item Loss function:
+        \begin{equation*}
+           \frac{1}{N} \sum_{n=1}^N(E_p^{(n)}-E_{label}^{(n)})^2
+        \end{equation*}
     \item Score prediction method: Pearson's \(R^2\)
 \end{itemize}
 
@@ -34,9 +45,16 @@ The results of linear regression turn out to be a perfect score for both trainin
 
 [code implementation of lsq]
 
-The issue of overfitting is clearly seen here if we plot the J matrix predicted.
 
-[overfitted J]
+The issue of overfitting is clearly seen in \cref{fig:overfit} if we plot the predicted J matrix.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{overfitting.png}
+    \caption{Overfitted $J$ matrix}
+    \label{fig:overfit}
+\end{figure}
+
 
 [fig. of three instances of fitting the data]
 
@@ -77,31 +95,59 @@ Unlike Lasso regression, Ridge did not offer any optimised regularisation \(\lam
 [fig. of ridge for 500n and 5000n]
 
 \subsubsection{Discussion on the results and further extension of our model}
-We obtain contrastingly different results for Lasso and Ridge despite several similarities in them. Both Ridge and Lasso don't like large values of \(||J||\) as it makes our data more sensitive to errors. They try to prefer J with smaller "slope" than that with large one. Thus, they regularise the overfitting issue efficiently.But the optimisation of Lasso and ridge w.r.t LSQ is different. It can be mathematically shown that:
+
+We obtain contrastingly different results for Lasso and Ridge despite several similarities in them.
+Both Ridge and Lasso don't like large values of \(||J||\) as it makes our data more sensitive to errors. They try to prefer $J$ with smaller ``slope'' than that with large one.
+Thus, they regularise the overfitting issue efficiently.
+But the optimisation of Lasso and ridge w.r.t LSQ is different.
+It can be mathematically shown that:
+
 \[J_{ridge}=\frac{J_{lsq}}{1+\lambda}\]
-Thus, ridge always scales the J by the regularisation parameter. Larger the \(\lambda\), more flat our "slope" becomes. But even for large \(\lambda\), J only approaches towards 0 asymptotically (close but never equal to 0).
 
-[fig. of Mehta et.al Ridge-Lasso]
+Thus, Ridge always scales the $J$ by the regularisation parameter.
+Larger the \(\lambda\), more flat our ``slope'' becomes.
+But even for large \(\lambda\), $J$ only approaches towards 0 asymptotically (close but never equal to 0).
 
-Lasso, on the other hand doesn't care about asymptotically reducing J. As we increase \(\lambda\), the gap b/w the \(J_{lsq}\) and \(J_{lasso}\) where J=0 widens. This results in more and more unimportant parts of our data being set to 0 (which we don't see in ridge). Thus, for some specific \(\lambda\), we have exactly the unnecessary data set to 0, and the prominent parts of our "slope" J intact. This is the reason we see sweet spots that perfectly regularise by making the unnecessary overfitting to 0 and only retain the original model. This is phenomenon is also referred to as 'sparse' regression.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{ridge-vs-lasso.png}
+    \caption{Visual schematic comparing Ridge and Lasso regression effects.}
+\end{figure}
+
+Lasso, on the other hand doesn't care about asymptotically reducing $J$.
+As we increase \(\lambda\), the gap b/w the \(J_{lsq}\) and \(J_{lasso}\) where $J=0$ widens.
+This results in more and more unimportant parts of our data being set to 0 (which we don't see in ridge).
+Thus, for some specific \(\lambda\), we have exactly the unnecessary data set to 0, and the prominent parts of our "slope" $J$ intact.
+This is the reason we see sweet spots that perfectly regularise by making the unnecessary overfitting to 0 and only retain the original model.
+This is phenomenon is also referred to as ``sparse'' regression.
 
 The Ridge model works at finding atom interaction beyond neighbours. We tested this by generating a data of lattices and labelling them with energy now defined by:
-\[J_{ij}=-1 if i=j-1 || i=j+1\]
-\[J_{ij}=-0.5 if i=j-2 || i=j+2\]
-\[J_{ij}=0\] else
+
+\begin{equation*}
+    J_{ij} = \left\{
+        \begin{array}{ll}
+            -1 & \mbox{if } i = j \pm 1\\
+            -0.5 & \mbox{if } i = j \pm 2\\
+            0 & \mbox{otherwise}
+        \end{array}
+    \right.
+\end{equation*}
 
 [fig. of J model and predicted J]
 
 [code result of scores ]
 
 \subsection{2D Ising Training Data}
-With our goal as to predict the ordered/disordered state of our lattice, we are in need of generating lots of Ising lattice data for each of the temperature steps about the critical temperature \(T_c\). A 2D ising lattice maintained in a temperature T constantly fights between stabilising itself by lowering its energy and allowing itself to excite to a higher energy configuration due to the thermal agitation existing. This is the result of the entropy of our lattice being minimised by establishing a statistical equilibrium between itself and the temperature reservoir in which it is existing. The standard algorithm to simulate this statistical phenomenon is the Metropolis Algorithm.
+With our goal as to predict the ordered/disordered state of our lattice, we are in need of generating lots of Ising lattice data for each of the temperature steps about the critical temperature \(T_c\).
+A 2D Ising lattice maintained at a temperature $T$ constantly fights between stabilising itself by lowering its energy and allowing itself to excite to a higher energy configuration due to the thermal agitation existing.
+This is the result of the entropy of our lattice being minimised by establishing a statistical equilibrium between itself and the temperature reservoir in which it is existing.
+The standard algorithm to simulate this statistical phenomenon is the Metropolis algorithm.
 
 \subsubsection{The Metropolis Algorithm}
 The goal of this algorithm is to find an equilibrium state for the two-dimensional spin lattice system at a particular temperature dictated by \(\beta\). It is achieved as follows:
 \begin{enumerate}
     \item Begin with a random state \(\mu\) for the lattice configuration.
-    \item Pick any random lattice site and flip the sign of the spin. We call this new state \(\nu\). What is the probability P($\mu \rightarrow \nu$) that we'll accept this new state?
+    \item Pick any random lattice site and flip the sign of the spin. We call this new state \(\nu\). What is the probability $P(\mu \rightarrow \nu)$ that we will accept this new state?
     \item If \(E_{\mu}>E_{\nu}\), then we set $P_{\nu \rightarrow \mu} = 1$ and thus by using the detailed balance equation we get $P_{\nu \rightarrow \mu} =e^{-\beta(E_{\nu}-E_{\mu})}$
     \item If $E_{\nu}>E_{\mu}$, then we set $P_{\mu \rightarrow \nu} = 1$ (i.e) with full probability, the spins gets flipped to a more stable configuration.
     \item Iterate step (1)-(4) as many times as required. Eventually we end up with an equilibrium state for large enough iterations
@@ -122,40 +168,54 @@ Input parameters while defining a class object of 2D ising model:
 
 Objects in our 2D ising model class:
 \begin{enumerate}
-
-    \item lattice: Our randomly generated lattice (with 0 padded on the edge) on defining the 2D ising model object.
-    \item energy: Computed energy of self.lattice
-    \item spin: Computed net spin of self.lattice
-
+    \item \texttt{lattice}: Our randomly generated lattice (with 0 padded on the edge) on defining the 2D ising model object.
+    \item \texttt{energy}: Computed energy of self.lattice
+    \item \texttt{spin}: Computed net spin of self.lattice
 \end{enumerate}
 
 Functions in our 2D ising model class:
 \begin{enumerate}
-
-    \item stable energy: Function to compute the most stable energy configuration
-    \item get energy: Function to compute the energy of self.lattice
-    \item flip check: Inputs x,y co-ordinates, outputs the energy before and after flipping the spin at (x,y)
-    \item flip: Inputs x,y co-ordinates, flips the spin at (x,y) of self.lattice
-
+    \item \texttt{stable\_energy}: Function to compute the most stable energy configuration
+    \item \texttt{get\_energy}: Function to compute the energy of self.lattice
+    \item \texttt{flip\_check}: Inputs x,y co-ordinates, outputs the energy before and after flipping the spin at (x,y)
+    \item \texttt{flip}: Inputs x,y co-ordinates, flips the spin at (x,y) of self.lattice
 \end{enumerate}
 
 We performed a numba implementation of our metropolis algorithm as it is extremely slow to perform iterations of order ~ 100,000 in a standard python executer. \\
 Runtime of generating one 50x50 lattice after 100,000 metro iterations using a python executer: ~ 47 secs\\
-Runtime of generating one 50x50 lattice after 100,000 metro iterations using numba: ~ 0.18 secs
+Runtime of generating one 50x50 lattice after 100,000 metro iterations using Numba: ~ 0.18 secs
 
-The data is organised as 10,000 Metro-generated lattices for one single temperature T. We have 20 such equally spaced temperatures in the range of T: 0.25-4 units.
+The data is organised as 10,000 Metro-generated lattices for one single temperature $T$. We have 20 such equally spaced temperatures in the range of $T$: 0.25-4 units.
 
-Iteration plots of our Metropolis algorithm shows that our algorithm exhibits convergence for lower temperatures and fluctuates and becomes noisy with increase in temperature. This is solely due to the fact that our system has an energy range for its likelihood to exist. These energy states almost have equal likelihood due to high T, and this does not correspond to the fact that our algorithm misbehaves at those cases. Spins usually do not converge since there are theoretically many spin configurations that might correspond to the same energy state.
+Iteration plots of our Metropolis algorithm shows that our algorithm exhibits convergence for lower temperatures and fluctuates and becomes noisy with increase in temperature. This is solely due to the fact that our system has an energy range for its likelihood to exist. These energy states almost have equal likelihood due to high $T$, and this does not correspond to the fact that our algorithm misbehaves at those cases. Spins usually do not converge since there are theoretically many spin configurations that might correspond to the same energy state.
 
 [convergence plots for ordered, critical and disordered energies]
 
 \subsection{2D Phase Transition Training}
+
 \subsubsection{Labelling and implementing Random Forest Algorithm}
-Now that we have generated our data, our objective now is to tell apart the ordered lattices from the disordered. The first task to achieve is to analytically find the critical temperature $T_c$ after which our lattices become disordered. This is given by\cite{onsagar}:
-\[T_c=\frac{J}{ln(1+\sqrt{2})}\]
-where J is the strength of interaction of our atoms with its neighbours. With J=2 in our case, we have $T_c=2.26$
+
+Now that we have generated our data, our objective now is to tell apart the ordered lattices from the disordered. The first task to achieve is to analytically find the critical temperature $T_c$ after which our lattices become disordered. This is given by \cite{onsager1944crystal}:
+
+\[T_c=\frac{J}{\log(1+\sqrt{2})}\]
+
+where $J$ is the strength of interaction of our atoms with its neighbours. With $J$=2 in our case, we have $T_c=2.26$.
 
 [e vs t and c vs t graph]
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{cvst.png}
+    \caption{Heat capacity vs temperature of lattice}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{evst.png}
+    \caption{Energy vs temperature of lattice}
+\end{figure}
+
+
 
 Thus, all lattices above T=2.26 is labelled 0 (as disordered lattice) and the ones below are labelled 1 (as ordered lattice). We further split our lattice into ordered, critical and disordered and proceed to only use the ordered and disordered lattices for training our model. We reserve the set of critical lattices for verifying our models performance in critical region as it is expected to struggle to classify lattices in that region. A better critical score means our model has learnt efficiently just from the ordered and disordered lattices on how to classify our lattices in the critical regime, along with the other regimes.
 
@@ -170,17 +230,17 @@ The Random forest implemented:
     \item Input variable: \(X=[x^i],x^i\in {X_{ordered}\bigcup X_{disordered}}\)
     \item Classifiers used: Decision Trees
     \item Hyperparameters used in tuning our optimal RF:
-        \item n estimators: No.of decision trees in our forest
-        \item min sample split: No.of samples needed to split an internal node
+        \item \texttt{n estimators}: No. of decision trees in our forest.
+        \item \texttt{min sample split}: No. of samples needed to split an internal node.
     \item Random sampling method: Bootstrap sampling
     \item Additional optimisation: Warm start=True. This ensures that you add estimators without fitting a whole new forest every time.
     \item Score prediction method for ordered and disordered samples: OOB estimators
-    \item Score prediction method for critical samples: mean accuracy score (in-built score function in our training model)
+    \item Score prediction method for critical samples: mean accuracy score (inbuilt score function in our training model)
 \end{itemize}
 
 The hyperparameter min sample split had two extremes: Coarse and Fine. Increasing the above hyperparameter makes our forest more and more coarse.
 
-The results obtained by Mehta et.al\cite{mehta} shows a poor performance in the critical samples though almost perfect for ordered and disordered samples. In the critical samples, vanilla RF gave a best accuracy of 69.2\% for coarse trees (leaf size: 10,000) compared to a accuracy score of 83.1\% for fine trees (leaf size: 2) at 100 estimators each.
+The results obtained by Mehta \emph{et al.} \cite{2019} shows a poor performance in the critical samples though almost perfect for ordered and disordered samples. In the critical samples, vanilla RF gave a best accuracy of 69.2\% for coarse trees (leaf size: 10,000) compared to a accuracy score of 83.1\% for fine trees (leaf size: 2) at 100 estimators each.
 
 [mehta plot]
 

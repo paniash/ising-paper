@@ -1,15 +1,25 @@
 \documentclass[journal]{IEEEtran}
 \usepackage[style=ieee]{biblatex}
 \bibliography{references.bib}
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{beramono}
 \usepackage{amsmath}
 \usepackage[none]{hyphenat}
 \usepackage{tgschola}
 \usepackage{authblk}
 \usepackage{amssymb}
 \usepackage{siunitx}
+\usepackage{microtype}
 \usepackage{fixmath}
 \usepackage{graphicx}
+\usepackage{minted}
+\usepackage{hyperref}
+\usepackage{cleveref}
 \graphicspath{{./images/}}
+
+% render vectors in bold
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\Hst}{\textsc{H}-structure}
 
 \setlength{\parskip}{3mm}
 \setlength{\parindent}{0mm}
@@ -29,6 +39,7 @@
 \input{theory}
 \input{results}
 \input{conclusion}
+\input{appendix}
 
 \printbibliography
 
