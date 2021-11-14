@@ -1,15 +1,29 @@
 \section{Results}
+
 \subsection{1D Ising Model}
-The first problem we will attempt to solve using Machine Learning is how we can find the pattern of 2-body interaction of atoms in a given 1D spin lattice. To get a flavor of what our objective is, consider the following:
 
-You are given a spin configuration of a 50-atom long spin lattice in the form of a 1D array. Each of these elements are either in up spin (+1) or down spin (-1). Suppose I consider the atom at the 5th site and say this atom adds stability to our lattice if both the spins neighbouring to it has the same spin as itself. By asserting such a statement, I have indirectly defined the energy of interaction between the 5th atom and 6th,7th atoms. This statement, translated into a physics equation, states: \[ E_{system}=J_{5,6}.\sigma_5\sigma_6+J_{5,7}.\sigma_5\sigma_7\]
+The first problem we will attempt to solve using machine learning is how we can find the pattern of 2-body interaction of atoms in a given 1D spin lattice.
+To get a flavor of what our objective is, consider the following:
 
-where \(J_{5,6}, J_{5,7}\) are the strength of interaction between the atoms in the subscript. If we extend the same argument to every single ith atom in the lattice interacting with every jth atom, we get the generalised 2-body interaction energy relation: \[E_{model}=\sum_{i,j=1}^{50}J_{ij}.\sigma_i\sigma_j\]
+You are given a spin configuration of a 50-atom long spin lattice in the form of a 1D array.
+Each of these elements are either in spin up (+1) or spin down (-1).
+Suppose we consider the atom at the 5th site and say this atom adds stability to our lattice if both the spins neighbouring to it has the same spin as itself.
+By asserting such a statement, we have indirectly defined the energy of interaction between the $5^{th}$ atom and $6^{th}$, $7^{th}$ atoms.
+This statement, translated into a physics equation, states:
 
-Now, if we are just given one lattice configuration with an energy label defined as above, there are countless possible \(J_{ij}\) matrices that are a valid solution to our above lattice. If we manage to get all \(2^{50}\) unique lattice configurations, then there is analytically only one solution for our \(J_{ij}\). But if we have some finite number of such 1D lattices with a energy label, it is possible to find the pattern in the nature of interaction of an atom with the other atoms of the lattice using regularised Machine Learning models.
+\[ E_{system}=J_{5,6}.\sigma_5\sigma_6+J_{5,7}.\sigma_5\sigma_7\]
+
+where \(J_{5,6}, J_{5,7}\) are the strength of interaction between the atoms in the subscript.
+If we extend the same argument to every single ith atom in the lattice interacting with every jth atom, we get the generalised 2-body interaction energy relation: \[E_{model}=\sum_{i,j=1}^{50}J_{ij}.\sigma_i\sigma_j\]
+
+Now, if we are just given one lattice configuration with an energy label defined as above, there are countless possible \(J_{ij}\) matrices that are a valid solution to our above lattice.
+If we manage to get all \(2^{50}\) unique lattice configurations, then there is analytically only one solution for our \(J_{ij}\).
+But if we have some finite number of such 1D lattices with a energy label, it is possible to find the pattern in the nature of interaction of an atom with the other atoms of the lattice using regularised machine learning models.
 
 \subsubsection{Data generation}
-We assume a lattice at high temperature since temperature doesnt affect the J matrix. A random assignment of spins in an 50 atom array along with the calculation of energy label based on the interaction matrix J defined by:
+
+We assume a lattice at high temperature since temperature doesnt affect the J matrix.
+A random assignment of spins in an 50 atom array along with the calculation of energy label based on the interaction matrix J defined by:
 
 \begin{equation*}
     J_{ij} = \left\{
@@ -22,17 +36,17 @@ We assume a lattice at high temperature since temperature doesnt affect the J ma
 
 \begin{figure}
     \centering
-    \includegraphics{J-model.png}
+    \includegraphics[scale=0.6]{J-model.png}
     \caption{J matrix for nearest neighbour interaction}
     \label{fig:j-matrix}
 \end{figure}
 
 \subsubsection{Unregularised Linear Regression}
-We implement the Least Square Regression model available in Scikit-learn. The details provided below.
+We implement the \emph{Least Square Regression} model available in scikit-learn. The details provided below.
 \begin{itemize}
     \item Parameter to train: \(J_{ij}\)
     \item Input variable: \(X_{ij}=\sigma_i\sigma_j\)
-    \item Predicted Regression variable: \(E^n=X^n.J\), where n is the nth lattice we input
+    \item Predicted Regression variable: \(E^n=X^n.J\), where $n$ is the $n^{th}$ lattice we input
     \item No of training lattices: N=10,000
     \item Loss function:
         \begin{equation*}
@@ -41,16 +55,15 @@ We implement the Least Square Regression model available in Scikit-learn. The de
     \item Score prediction method: Pearson's \(R^2\)
 \end{itemize}
 
-The results of linear regression turn out to be a perfect score for both training and testing data
+The results of linear regression turn out to be a perfect score for both training and testing data.
 
 [code implementation of lsq]
 
-
-The issue of overfitting is clearly seen in \cref{fig:overfit} if we plot the predicted J matrix.
+The issue of overfitting is clearly seen in \cref{fig:overfit} if we plot the predicted $J$ matrix.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[scale=0.5]{overfitting.png}
+    \includegraphics[scale=0.4]{overfitting.png}
     \caption{Overfitted $J$ matrix}
     \label{fig:overfit}
 \end{figure}
@@ -60,10 +73,11 @@ The issue of overfitting is clearly seen in \cref{fig:overfit} if we plot the pr
 
 [graph of score vs n]
 
-The model overfits and produces perfect scores in both training and testing datasets after a certain size of input data because the statistical properties of our training and testing data becomes identical on large samples of lattices. Thus overfitting gets away with it unattended!
+The model overfits and produces perfect scores in both training and testing datasets after a certain size of input data because the statistical properties of our training and testing data becomes identical on large samples of lattices.
+Thus overfitting gets away with it unattended!
 
 \subsubsection{Regularised Lasso Regression}
-We then implement the Lasso Regression model available in Scikit-learn. The details provided below.
+We then implement the Lasso Regression model available in scikit-learn. The details provided below.
 \begin{itemize}
     \item Parameter to train: \(J_{ij}\)
     \item Input variable: \(X_{ij}=\sigma_i\sigma_j\)
@@ -74,12 +88,26 @@ We then implement the Lasso Regression model available in Scikit-learn. The deta
 
 [code implementation of lasso]
 
-The implementation of Lasso regression gave significant improvement in the overfitting issue. For smaller datasets, we found a "window of sweet-spot" for \(\lambda\) in which the model accurately predicted the lattice interactions without any issue of overfitting. For larger datasets, even a small regularisation \(\lambda\) yields an accurate prediction of our interaction matrix.
+The implementation of Lasso regression gave significant improvement in the overfitting issue.
+For smaller datasets, we found a ``window of sweet-spot'' for \(\lambda\) in which the model accurately predicted the lattice interactions without any issue of overfitting.
+For larger datasets, even a small regularisation \(\lambda\) yields an accurate prediction of our interaction matrix.
 
-[fig. of lasso for 500n and 5000n]
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.55]{lasso_n-495.png}
+    \caption{Training and testing score as a function of \( \lambda \) (\( n=495 \)).}
+\end{figure}
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.55]{lasso_n-5000.png}
+    \caption{Training and testing score as a function of \( \lambda \) (\( n=5000 \)).}
+\end{figure}
+
 
 \subsubsection{Ridge Regression}
-Finally we implement the Ridge Regression model available in Scikit-learn. The details provided below.
+Finally we implement the Ridge Regression model available in scikit-learn. The details provided below.
 \begin{itemize}
     \item Parameter to train: \(J_{ij}\)
     \item Input variable: \(X_{ij}=\sigma_i\sigma_j\)
@@ -90,9 +118,23 @@ Finally we implement the Ridge Regression model available in Scikit-learn. The d
 
 [code implementation of ridge]
 
-Unlike Lasso regression, Ridge did not offer any optimised regularisation \(\lambda\) for smaller datasets. The model is seen to performed as poorly as LSQ. However, on increasing the data size, our ridge performs better at predicting our interaction matrix without the issue of overfitting.
+Unlike Lasso regression, Ridge did not offer any optimised regularisation \(\lambda\) for smaller datasets.
+The model is seen to performed as poorly as LSQ.
+However, on increasing the data size, our ridge performs better at predicting our interaction matrix without the issue of overfitting.
 
-[fig. of ridge for 500n and 5000n]
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.55]{ridge_n-493.png}
+    \caption{Training and testing score as a function of \( \lambda \) (\( n=493 \)).}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.55]{ridge_n-3005.png}
+    \caption{Training and testing score as a function of \( \lambda \) (\( n=3005 \)).}
+\end{figure}
+
+
 
 \subsubsection{Discussion on the results and further extension of our model}
 
@@ -115,9 +157,9 @@ But even for large \(\lambda\), $J$ only approaches towards 0 asymptotically (cl
 \end{figure}
 
 Lasso, on the other hand doesn't care about asymptotically reducing $J$.
-As we increase \(\lambda\), the gap b/w the \(J_{lsq}\) and \(J_{lasso}\) where $J=0$ widens.
+As we increase \(\lambda\), the gap between the \(J_{lsq}\) and \(J_{lasso}\) where $J=0$ widens.
 This results in more and more unimportant parts of our data being set to 0 (which we don't see in ridge).
-Thus, for some specific \(\lambda\), we have exactly the unnecessary data set to 0, and the prominent parts of our "slope" $J$ intact.
+Thus, for some specific \(\lambda\), we have exactly the unnecessary data set to 0, and the prominent parts of our ``slope'' $J$ intact.
 This is the reason we see sweet spots that perfectly regularise by making the unnecessary overfitting to 0 and only retain the original model.
 This is phenomenon is also referred to as ``sparse'' regression.
 
@@ -153,17 +195,15 @@ The goal of this algorithm is to find an equilibrium state for the two-dimension
     \item Iterate step (1)-(4) as many times as required. Eventually we end up with an equilibrium state for large enough iterations
 \end{enumerate}
 
-The convergence for a solution is guaranteed for large enough iterations. It can be statistically shown that the relative error for the above Monte-Carlo goes as $\Delta E/E \approx 1/\sqrt{N}$ for large iterations N.
+The convergence for a solution is guaranteed for large enough iterations. It can be statistically shown that the relative error for the above Monte-Carlo goes as $\Delta E/E \approx 1/\sqrt{N}$ for large iterations $N$.
 
 Our implementation of the Metropolis algorithm is done by defining a class 2D Ising model that has the following parameters and objects:
 
 Input parameters while defining a class object of 2D ising model:
 \begin{enumerate}
-
-    \item d: Dimension of our 2D lattice. dtype=int
-    \item a: Expected ratio of down spins to up spins in our randomly generated lattice
-    \item mfield: Option to add the presence of an external magnetic field in our existing lattice.
-
+    \item \texttt{d}: Dimension of our 2D lattice. \texttt{dtype=int}
+    \item \texttt{a}: Expected ratio of down spins to up spins in our randomly generated lattice
+    \item \texttt{mfield}: Option to add the presence of an external magnetic field in our existing lattice.
 \end{enumerate}
 
 Objects in our 2D ising model class:
@@ -176,9 +216,9 @@ Objects in our 2D ising model class:
 Functions in our 2D ising model class:
 \begin{enumerate}
     \item \texttt{stable\_energy}: Function to compute the most stable energy configuration
-    \item \texttt{get\_energy}: Function to compute the energy of self.lattice
+    \item \texttt{get\_energy}: Function to compute the energy of \texttt{self.lattice}
     \item \texttt{flip\_check}: Inputs x,y co-ordinates, outputs the energy before and after flipping the spin at (x,y)
-    \item \texttt{flip}: Inputs x,y co-ordinates, flips the spin at (x,y) of self.lattice
+    \item \texttt{flip}: Inputs x,y co-ordinates, flips the spin at (x,y) of \texttt{self.lattice}
 \end{enumerate}
 
 We performed a numba implementation of our metropolis algorithm as it is extremely slow to perform iterations of order ~ 100,000 in a standard python executer. \\
@@ -187,7 +227,10 @@ Runtime of generating one 50x50 lattice after 100,000 metro iterations using Num
 
 The data is organised as 10,000 Metro-generated lattices for one single temperature $T$. We have 20 such equally spaced temperatures in the range of $T$: 0.25-4 units.
 
-Iteration plots of our Metropolis algorithm shows that our algorithm exhibits convergence for lower temperatures and fluctuates and becomes noisy with increase in temperature. This is solely due to the fact that our system has an energy range for its likelihood to exist. These energy states almost have equal likelihood due to high $T$, and this does not correspond to the fact that our algorithm misbehaves at those cases. Spins usually do not converge since there are theoretically many spin configurations that might correspond to the same energy state.
+Iteration plots of our Metropolis algorithm shows that our algorithm exhibits convergence for lower temperatures and fluctuates and becomes noisy with increase in temperature.
+This is solely due to the fact that our system has an energy range for its likelihood to exist.
+These energy states almost have equal likelihood due to high $T$, and this does not correspond to the fact that our algorithm misbehaves at those cases.
+Spins usually do not converge since there are theoretically many spin configurations that might correspond to the same energy state.
 
 [convergence plots for ordered, critical and disordered energies]
 
@@ -200,8 +243,6 @@ Now that we have generated our data, our objective now is to tell apart the orde
 \[T_c=\frac{J}{\log(1+\sqrt{2})}\]
 
 where $J$ is the strength of interaction of our atoms with its neighbours. With $J$=2 in our case, we have $T_c=2.26$.
-
-[e vs t and c vs t graph]
 
 \begin{figure}[h!]
     \centering
@@ -216,42 +257,71 @@ where $J$ is the strength of interaction of our atoms with its neighbours. With 
 \end{figure}
 
 
+Thus, all lattices above $T=2.26$ is labelled 0 (as disordered lattice) and the ones below are labelled 1 (as ordered lattice).
+We further split our lattice into ordered, critical and disordered and proceed to only use the ordered and disordered lattices for training our model.
+We reserve the set of critical lattices for verifying our models performance in critical region as it is expected to struggle to classify lattices in that region.
+A better critical score means our model has learnt efficiently just from the ordered and disordered lattices on how to classify our lattices in the critical regime, along with the other regimes.
 
-Thus, all lattices above T=2.26 is labelled 0 (as disordered lattice) and the ones below are labelled 1 (as ordered lattice). We further split our lattice into ordered, critical and disordered and proceed to only use the ordered and disordered lattices for training our model. We reserve the set of critical lattices for verifying our models performance in critical region as it is expected to struggle to classify lattices in that region. A better critical score means our model has learnt efficiently just from the ordered and disordered lattices on how to classify our lattices in the critical regime, along with the other regimes.
+We implement a Random Forests classifier from scikit-learn as our training model for the above method due to the below reasons:
 
-We implement a Random forest classifier from Scikit learn as our training model for the above method due to the below reasons:
 \begin{itemize}
     \item Our lattices are Monte-Carlo generated where our predictions are usually correlated. A spin flip in the initial stage of the Metropolis algorithm can result is an entirely new lattice configuration in the end. Thus weak classifiers such as decision trees and averaging several such models reduces the risk of choosing the wrong model (lowering the overall variance and bias).
     \item Ensemble methods such as RF reduces the risk of our model to rely on some greedy assumption or local search that may get stuck in a local extrema (quite common in Monte-Carlo data such as ours) and thus, it generates a better predicting model.
 \end{itemize}
 
-The Random forest implemented:
+The Random Forests algorithm is implemented as follows:
 \begin{itemize}
     \item Input variable: \(X=[x^i],x^i\in {X_{ordered}\bigcup X_{disordered}}\)
     \item Classifiers used: Decision Trees
     \item Hyperparameters used in tuning our optimal RF:
-        \item \texttt{n estimators}: No. of decision trees in our forest.
-        \item \texttt{min sample split}: No. of samples needed to split an internal node.
+        \item \texttt{n\_estimators}: No. of decision trees in our forest.
+        \item \texttt{min\_sample\_split}: No. of samples needed to split an internal node.
     \item Random sampling method: Bootstrap sampling
     \item Additional optimisation: Warm start=True. This ensures that you add estimators without fitting a whole new forest every time.
     \item Score prediction method for ordered and disordered samples: OOB estimators
     \item Score prediction method for critical samples: mean accuracy score (inbuilt score function in our training model)
 \end{itemize}
 
-The hyperparameter min sample split had two extremes: Coarse and Fine. Increasing the above hyperparameter makes our forest more and more coarse.
+The hyperparameter \texttt{min\_sample\_split} has two extremes: coarse and fine.
+Increasing the above hyperparameter makes our forest much coarser.
 
 The results obtained by Mehta \emph{et al.} \cite{2019} shows a poor performance in the critical samples though almost perfect for ordered and disordered samples. In the critical samples, vanilla RF gave a best accuracy of 69.2\% for coarse trees (leaf size: 10,000) compared to a accuracy score of 83.1\% for fine trees (leaf size: 2) at 100 estimators each.
 
-[mehta plot]
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.45]{mehta.png}
+    \caption{Scores for various phases obtained in \cite{2019}.}
+\end{figure}
 
-\subsubsection{Improving the algorithm: A Transductive Approach}
-Given that we see the fact our model struggles in the critical region, we expect a deeper learning in the critical region will help our model get over the poor performance. We implemented this idea into our random by introducing a transduction in our model by weighing the lattices closer to the critical regime more than the ones far from it. Since Scikit Learn does not have the option to add sample weight as an input, we performed data cloning so that our random forest encounters these samples more and trains more on them. This simple hack will aid our random forest pick features more prominent in the critical region and by this emphasis, it trains deep in those features. It also lowers the priority of features present in completely ordered/disordered lattices since they don’t play as important of a role as the lattices that are in the neighbourhood of the critical point.
+
+\subsubsection{Improving the algorithm: Transductive Approach}
+Given that we see the fact our model struggles in the critical region, we expect a deeper learning in the critical region will help our model get over the poor performance.
+We implemented this idea into our random by introducing a transduction in our model by weighing the lattices closer to the critical regime more than the ones far from it.
+Since scikit-learn does not have the option to add sample weight as an input, we performed data cloning so that our random forest encounters these samples more and trains more on them.
+This simple hack will aid our algorithm to pick features more prominent in the critical region and by this emphasis, it trains deep in those features.
+It also lowers the priority of features present in completely ordered/disordered lattices since they don’t play as important of a role as the lattices that are in the neighbourhood of the critical point.
 
 [transduction graf]
 
-Results of our Modified Random Forest:
+Results of our modified Random Forests are as follows,
 
-[scores graf]
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.45]{train-score.png}
+    \caption{Scores for training datasets obtained as a function of \( N_{\text{estimators}} \).}
+\end{figure}
 
-The results show an increase in the accuracy of the classification of critical samples compared to vanilla RF. Interestingly, by emphasising on samples closer to critical temperature Tc , the our altered version of RF works better
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.45]{test-score.png}
+    \caption{Scores for testing datasets obtained as a function of \( N_{\text{estimators}} \).}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.45]{critical-score.png}
+    \caption{Scores for the critical phases obtained as a function of \( N_{\text{estimators}} \).}
+\end{figure}
+
+The results show an increase in the accuracy of the classification of critical samples compared to vanilla RF. Interestingly, by emphasising on samples closer to critical temperature $T_c$, our altered version of RF works better
 for coarse trees (92.0\%) than fine ones (88.75\%). A reason for this might be due to the fact that our implementation of RF identified many features in the critical samples that made it effect in larger leaf sizes than smaller ones. We note that our model still retains its efficiency in classifying the ordered and disordered samples as the OOB scores for these samples are still good.

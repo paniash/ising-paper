@@ -4,10 +4,18 @@
 For any Ising spin model consisting of spin particles such as atoms/molecules, we consider a lattice (depending on the dimension of the system under consideration) with \( N \) spin particles, whose Hamiltonian is given by
 
 \begin{equation}
-    \vec{H} = \sum_{\langle i, j \rangle}^{N, N} J_{ij} \sigma_i \cdot \sigma_j
+    \vec{H} = \sum_{\langle i, j \rangle}^{N, N} J_{ij} \vec{\sigma}_i \cdot \vec{\sigma}_j
 \end{equation}
 
-where \( J_{ij} \) is the coupling strength (parameter quantifying the interaction between spin particles), \( \sigma_{i/j} \) is the spin of the particles (+1 for spin-\( \uparrow \) and -1 for spin-\( \downarrow \)).
+where \( J_{ij} \) is the coupling strength (parameter quantifying the interaction between spin particles) between the \( i^{th} \) and \( j^{th} \) particle, \( \vec{\sigma}_{i/j} \) are the spin matrices of the particles corresponding to +1 for spin-\( \uparrow \) and -1 for spin-\( \downarrow \).
 
 Note that we ensure an interaction upto the first nearest neighbours i.e. immediate neighbours of a spin particle.
-This is denoted by \( \langle i, j \rangle \).
+This is denoted by \( \langle i, j \rangle \) under the summation. 
+
+The corresponding energy of the entire lattice consisting of \( N \) particles is given similarly by
+
+\begin{equation}
+    E = \sum_{\langle i, j \rangle}^{N, N} J_{ij} \sigma_i  \sigma_j
+\end{equation}
+
+where \( \sigma_{i/j} \) is +1 for spin \( \uparrow \) and -1 for spin \( \downarrow \).
